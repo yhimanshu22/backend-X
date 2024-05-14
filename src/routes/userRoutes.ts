@@ -19,12 +19,12 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ message: "email or username already exist" })
         }
         //creating a user if email or username not exist in database
-        const result = await prisma.user.create({
+        const createUser = await prisma.user.create({
             data: {
                 email, name, username, bio: "Hello ,I'm new on twitter"
             }
         });
-        res.json(result);
+        res.json(createUser);
 
     } catch (error) {
         // Handle any database errors
@@ -36,8 +36,8 @@ router.post('/', async (req, res) => {
 //list all users--------->
 
 router.get('/', async (_, res) => {
-    const allUser = await prisma.user.findMany();
-    res.json(allUser);
+    const getAllUser = await prisma.user.findMany();
+    res.json(getAllUser);
 })
 
 //get one user----------->
@@ -45,9 +45,9 @@ router.get('/', async (_, res) => {
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const user = await prisma.user.findUnique({ where: { id: Number(id) } })
-        if (user) {
-            res.json(user)
+        const getOneUser = await prisma.user.findUnique({ where: { id: Number(id) } })
+        if (getOneUser) {
+            res.json(getOneUser)
         } else {
             res.status(400).json({ message: "User not found" })
         }
@@ -59,6 +59,7 @@ router.get('/:id', async (req, res) => {
 })
 
 //update user-------->
+
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { bio, name, image } = req.body;
@@ -84,6 +85,7 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+//delete user--------->
 
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
