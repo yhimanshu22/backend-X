@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
+import { toUSVString } from "util";
 
 const router = Router()
 const prisma = new PrismaClient();
@@ -27,7 +28,21 @@ router.post('/', async (req, res) => {
 // list Tweets------>
 
 router.get('/', async (req, res) => {
-    const allTweets = await prisma.tweet.findMany();
+    const allTweets = await prisma.tweet.findMany({
+        include: { user: { select: { id: true, name: true, username: true, image: true } } },
+        /*select: {
+            id: true,
+            content: true,
+            user: {
+                select: {
+                    id: true,
+                    name: true,
+                    username: true,
+                    image: true,
+                }
+            }
+        }*/
+    });
     res.json(allTweets)
 })
 

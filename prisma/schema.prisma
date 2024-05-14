@@ -21,7 +21,7 @@ model User {
   image      String?
   bio        String?
   idVerified Boolean @default(false)
-  Tweet      Tweet[]
+  tweets     Tweet[]
 }
 
 model Tweet {

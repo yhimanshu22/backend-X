@@ -36,7 +36,16 @@ router.post('/', async (req, res) => {
 //list all users--------->
 
 router.get('/', async (_, res) => {
-    const getAllUser = await prisma.user.findMany();
+    const getAllUser = await prisma.user.findMany(
+        /*{
+            if we want to select specific data to show------>
+            select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                }
+         }*/
+    );
     res.json(getAllUser);
 })
 
@@ -45,7 +54,7 @@ router.get('/', async (_, res) => {
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const getOneUser = await prisma.user.findUnique({ where: { id: Number(id) } })
+        const getOneUser = await prisma.user.findUnique({ where: { id: Number(id) }, include: { tweets: true }, })
         if (getOneUser) {
             res.json(getOneUser)
         } else {
