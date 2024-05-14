@@ -1,5 +1,7 @@
 import express from "express";
 
+
+
 const app = express();
 
 
@@ -15,7 +17,7 @@ app.get('/', (req, res) => {
 })
 
 //calling routes----------->
-app.use('/user', userRoutes)
+app.use('/users', userRoutes)
 app.use('/tweet', tweetRoutes)
 
 
