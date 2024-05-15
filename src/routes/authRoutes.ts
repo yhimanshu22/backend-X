@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import jwt from 'jsonwebtoken';
 import { Router } from "express";
+import { sendEmailToken } from "../services/emailService";
 
 const router = Router()
 const prisma = new PrismaClient()
@@ -29,11 +30,9 @@ function genearteAuthToken(tokenId: number): string {
 //create a user ,if it doesnt exist
 //generate the emailtaken and send it to their email
 router.post('/login', async (req, res) => {
-
     const { email } = req.body;
-    //generate token
     const emailToken = generateEmailToken();
-    const expiration = new Date(new Date().getTime() + EMAIL_TOKEN_EXPIRATION_MINUTES * 60 * 1000)
+    const expiration = new Date(new Date().getTime() + EMAIL_TOKEN_EXPIRATION_MINUTES * 60 * 1000);
 
     try {
         const createdToken = await prisma.token.create({
@@ -48,16 +47,18 @@ router.post('/login', async (req, res) => {
                     }
                 }
             }
-        })
-        console.log(createdToken);
-        //send emailtoken to user's email--------->
+        });
+
+        // Send email token to user's email
+        await sendEmailToken(email, emailToken); // Call the sendEmailToken function
+
         res.sendStatus(200);
     } catch (e) {
         console.log(e);
-        res.status(400).json({ error: "couldn't start the authentication process " })
+        res.status(400).json({ error: "Couldn't start the authentication process" });
     }
+});
 
-})
 
 //validate the emailToken------>
 //generate a long-lived jwt token--------->
