@@ -1,110 +1,87 @@
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
-import { toUSVString } from "util";
 
-const router = Router()
+const router = Router();
 const prisma = new PrismaClient();
 
-// create Tweet --------->
-
+// Create Tweet
 router.post('/', async (req, res) => {
-    const { content, image, userId } = req.body;
-    try {
-        // Create the tweet in the database
-        const createTweet = await prisma.tweet.create({
-            data: { content, image, userId }
-        });
+    const { content, image } = req.body;
+    //@ts-ignore
+    const userId = req.user.id;
 
-        // Send the created tweet in the response
-        return res.json(createTweet);
+    try {
+        const createTweet = await prisma.tweet.create({
+            data: { content, image, userId: userId }
+        });
+        return res.status(201).json(createTweet);
     } catch (error) {
-        // Handle errors
         console.error("Error creating tweet:", error);
         return res.status(500).json({ error: "Failed to create tweet" });
     }
 });
 
-
-// list Tweets------>
-
+// List Tweets
 router.get('/', async (req, res) => {
-    const allTweets = await prisma.tweet.findMany({
-        include: { user: { select: { id: true, name: true, username: true, image: true } } },
-        /*select: {
-            id: true,
-            content: true,
-            user: {
-                select: {
-                    id: true,
-                    name: true,
-                    username: true,
-                    image: true,
-                }
-            }
-        }*/
-    });
-    res.json(allTweets)
-})
+    try {
+        const allTweets = await prisma.tweet.findMany({
+            include: { user: { select: { id: true, name: true, username: true, image: true } } }
+        });
+        res.json(allTweets);
+    } catch (error) {
+        console.error("Error listing tweets:", error);
+        res.status(500).json({ error: "Failed to list tweets" });
+    }
+});
 
-// get one tweet by id-------->
-
+// Get One Tweet by ID
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
+    try {
+        const getTweetById = await prisma.tweet.findUnique({ where: { id: Number(id) } });
+        if (!getTweetById) return res.status(404).json({ error: "Tweet not found" });
+        return res.json(getTweetById);
+    } catch (error) {
+        console.error("Error getting tweet by ID:", error);
+        res.status(500).json({ error: "Failed to get tweet by ID" });
+    }
+});
 
-    const getTweetById = await prisma.tweet.findUnique({ where: { id: Number(id) } })
-
-    if (!getTweetById) { return res.status(404).json({ error: "tweet not found" }) }
-
-    return res.json(getTweetById)
-})
-
-// update tweet ---------->
-
+// Update Tweet
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
-    const { content, image, userId } = req.body;
-    const existingTweet = await prisma.tweet.findUnique({ where: { id: parseInt(id) } });
+    const { content, image } = req.body;
+    //@ts-ignore
+    const userId = req.user.id;
 
     try {
-        if (!existingTweet) { return res.status(404).json({ message: "tweet not found" }) };
+        const existingTweet = await prisma.tweet.findUnique({ where: { id: Number(id) } });
+        if (!existingTweet) return res.status(404).json({ message: "Tweet not found" });
 
-        //update the tweet in the database------->
         const updateTweet = await prisma.tweet.update({
-            where: { id: parseInt(id) },
+            where: { id: Number(id) },
             data: { content, image, userId }
         });
-
-        //send the updated tweet in the database------>
         res.json(updateTweet);
-    } catch (e) {
-        console.error("error in updating tweet", e);
-        res.status(500).json({ error: 'Failed to update tweet' })
+    } catch (error) {
+        console.error("Error updating tweet:", error);
+        res.status(500).json({ error: "Failed to update tweet" });
     }
+});
 
-})
-
-//delete tweet
+// Delete Tweet
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
-
     try {
-        // Check if the tweet exists
-        const existingTweet = await prisma.tweet.findUnique({ where: { id: parseInt(id) } });
-        if (!existingTweet) {
-            return res.status(404).json({ error: "Tweet not found" });
-        }
+        const existingTweet = await prisma.tweet.findUnique({ where: { id: Number(id) } });
+        if (!existingTweet) return res.status(404).json({ error: "Tweet not found" });
 
-        // Delete the tweet from the database
-        await prisma.tweet.delete({ where: { id: parseInt(id) } });
-
-        // Send a success response
+        await prisma.tweet.delete({ where: { id: Number(id) } });
         res.sendStatus(200);
     } catch (error) {
-        // Handle errors
         console.error("Error deleting tweet:", error);
         res.status(500).json({ error: "Failed to delete tweet" });
     }
 });
-
 
 export default router;
