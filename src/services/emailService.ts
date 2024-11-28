@@ -1,12 +1,17 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import nodemailer from 'nodemailer';
 import { send } from 'process';
 
-// Create a transporter using Gmail SMTP
+// Create a transporter using Mailtrap SMTP
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT),
+    secure: process.env.SMTP_SECURE === 'true',
     auth: {
-        user: 'your_email@gmail.com',
-        pass: 'your_password'
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
     }
 });
 
